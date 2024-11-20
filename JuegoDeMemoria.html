@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Memoria</title>
+    <style>
+        /* CSS */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column; /* Alineación vertical de los elementos */
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+
+        .escudo {
+            width: 200px;
+            height: auto;
+            margin-bottom: 20px; /* Espacio entre la imagen y el título */
+        }
+
+        .game-container {
+            text-align: center;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            grid-gap: 10px;
+            margin-top: 20px;
+        }
+
+        .card {
+            width: 100px;
+            height: 100px;
+            background-color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .card.flipped, .card.matched {
+            background-color: #4CAF50;
+            color: #fff;
+        }
+
+        .card.matched {
+            cursor: default;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #333;
+        }
+
+        #restartButton {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #restartButton:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <a href="interaccion.html">
+    <img  src="escuedo.jpg" alt="Escudo" class="escudo" >
+</a>
+    <div class="game-container">
+        <h1>Juego de Memoria</h1>
+        <button id="restartButton">Reiniciar</button>
+        <div class="grid" id="grid"></div>
+    </div>
+
+    <script>
+        // JavaScript
+        const grid = document.getElementById('grid');
+        const restartButton = document.getElementById('restartButton');
+
+        const cardsArray = ['🍎', '🍌', '🍇', '🍉', '🍓', '🍒', '🍑', '🥭', '🍎', '🍌', '🍇', '🍉', '🍓', '🍒', '🍑', '🥭'];
+        let shuffledCards, firstCard, secondCard;
+        let lockBoard = false; // Evitar que se pueda hacer clic mientras se comparan cartas
+
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        function createBoard() {
+            shuffledCards = shuffle(cardsArray);
+            grid.innerHTML = ''; // Limpiar el tablero antes de agregar nuevas cartas
+
+            shuffledCards.forEach((symbol) => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.dataset.symbol = symbol;
+                card.addEventListener('click', flipCard);
+                grid.appendChild(card);
+            });
+        }
+
+        function flipCard() {
+            if (lockBoard || this === firstCard || this.classList.contains('matched')) return;
+
+            this.classList.add('flipped');
+            this.textContent = this.dataset.symbol;
+
+            if (!firstCard) {
+                firstCard = this;
+            } else {
+                secondCard = this;
+                checkForMatch();
+            }
+        }
+
+        function checkForMatch() {
+            lockBoard = true;
+            const isMatch = firstCard.dataset.symbol === secondCard.dataset.symbol;
+
+            if (isMatch) {
+                disableCards();
+            } else {
+                unflipCards();
+            }
+        }
+
+        function disableCards() {
+            firstCard.classList.add('matched');
+            secondCard.classList.add('matched');
+            resetTurn();
+        }
+
+        function unflipCards() {
+            setTimeout(() => {
+                firstCard.classList.remove('flipped');
+                secondCard.classList.remove('flipped');
+                firstCard.textContent = '';
+                secondCard.textContent = '';
+                resetTurn();
+            }, 1000);
+        }
+
+        function resetTurn() {
+            [firstCard, secondCard] = [null, null];
+            lockBoard = false;
+        }
+
+        restartButton.addEventListener('click', createBoard);
+
+        // Iniciar el juego
+        createBoard();
+    </script>
+</body>
+</html>
